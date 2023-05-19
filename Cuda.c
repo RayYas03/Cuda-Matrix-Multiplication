@@ -1,7 +1,8 @@
-%%cu
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <cuda.h>
+#include <cuda_runtime.h>
 
 __global__ void MatrixMulKernel(float* M, float* N, float* P, int M_rows, int M_cols_N_rows, int N_cols) {
     int Row = blockIdx.y * blockDim.y + threadIdx.y;
@@ -67,12 +68,14 @@ int main() {
 
     cudaMemcpy(h_P, d_P, size_P, cudaMemcpyDeviceToHost);
 
-    printf("Printing some elements of the result matrix:\n");
-    for (int i = 0; i < 10; i++) {
-        for (int j = 0; j < 10; j++) {
-            printf("%f ", h_P[i * N_cols + j]);
-        }
-        printf("\n");
+    int deviceCount;
+    cudaGetDeviceCount(&deviceCount);
+    
+    for (int i = 0; i < deviceCount; ++i) {
+        cudaDeviceProp deviceProp;
+        cudaGetDeviceProperties(&deviceProp, i);
+        int numProcessors = deviceProp.multiProcessorCount;
+        printf("Device %d: Number of Processors: %d\n", i, numProcessors);
     }
 
     free(h_M);
