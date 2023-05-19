@@ -1,6 +1,8 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <cuda.h>
+#include <cuda_runtime.h>
 
 #define TILE_WIDTH 32
 
@@ -68,12 +70,14 @@ int main() {
 
     cudaMemcpy(hostC, deviceC, sizeC, cudaMemcpyDeviceToHost);
 
-    printf("Printing some elements of the result matrix:\n");
-    for (int i = 0; i < 10; i++) {
-        for (int j = 0; j < 10; j++) {
-            printf("%f ", hostC[i * colsB + j]);
-        }
-        printf("\n");
+    int deviceCount;
+    cudaGetDeviceCount(&deviceCount);
+    
+    for (int i = 0; i < deviceCount; ++i) {
+        cudaDeviceProp deviceProp;
+        cudaGetDeviceProperties(&deviceProp, i);
+        int numProcessors = deviceProp.multiProcessorCount;
+        printf("Device %d: Number of Processors: %d\n", i, numProcessors);
     }
 
     free(hostA);
